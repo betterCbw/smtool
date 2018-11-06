@@ -12,13 +12,17 @@
     // 发布部分：
     PAGE.addSubscriber(fn) // 向发布器中添加一个订阅函数，typeof fn === 'function'
     PAGE.removeSubscriber(name) // 通过函数名取消订阅
-    PAGE.publish(type) // 发布消息，无需调用
+
+    // 按键事件：
+    bindOnKeyDown(keyCode) // keyCode:键值
 
     // 附加：
+    PAGE.publish(type) // 发布消息，无需调用
     makePublisher() // 创建一个新的发布器
     */
 
     function init() {
+        // 键值映射及其操作函数
         var KeyMap = {
             keyMap: {
                 left: 37,
@@ -46,6 +50,7 @@
             }
         };
 
+        // 发布器
         var Publisher = {
             subscribers: [],
             addSubscriber: function(fn) {
@@ -67,6 +72,8 @@
                 })
             },
         };
+
+        // 返回值
         return {
             __keyMap: KeyMap.keyMap,
             getKeyMap: function() {
@@ -91,16 +98,14 @@
             },
             publish: function(type) {
                 this.__publisher.publish(type)
+            },
+
+            bindOnKeyDown: function(keyCode) {
+                this.publish(this.getKeyByValue(keyCode));
             }
         }
     }
 
     window.makePublisher = init;
     window.PAGE = init();
-
-    function onKeyDown(evt) {
-        window.PUBLISHER.publish(KEYMAP.getKeyByValue(evt.keyCode));
-    }
-
-    window.document.onkeydown = onKeyDown;
 })(window);
