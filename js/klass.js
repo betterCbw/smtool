@@ -1,0 +1,106 @@
+(function(window) {
+
+    // 版本号
+    var VERSION = '0.0.1';
+    /* 
+    // KEYMAP部分：
+    PAGE.getKeyMap() // 返回当前KEYMAP
+    PAGE.setKeyMap(key, value) // 设置KEYMAP[key] = value
+    PAGE.getValueByKey(key) // 通过key获取value，返回key、value键值对{key: value}
+    PAGE.getKeyByValue(value) // 通过value获取key，返回key
+
+    // 发布部分：
+    PAGE.addSubscriber(fn) // 向发布器中添加一个订阅函数，typeof fn === 'function'
+    PAGE.removeSubscriber(name) // 通过函数名取消订阅
+    PAGE.publish(type) // 发布消息，无需调用
+
+    // 附加：
+    makePublisher() // 创建一个新的发布器
+    */
+
+    function init() {
+        var KeyMap = {
+            keyMap: {
+                left: 37,
+                up: 38,
+                right: 39,
+                down: 40,
+                enter: 13,
+                back: 96,
+            },
+
+            setKeyMap: function(key, value) {
+                this.keyMap[key] = value;
+            },
+            getValueByKey: function(key) {
+                var temp = {};
+                temp[key] = this.keyMap[key];
+                return temp;
+            },
+            getKeyByValue: function(value) {
+                for (var i in this.keyMap) {
+                    if (this.keyMap[i] === value) {
+                        return i;
+                    }
+                }
+            }
+        };
+
+        var Publisher = {
+            subscribers: [],
+            addSubscriber: function(fn) {
+                if (typeof fn !== "function") {
+                    throw new Error("Publisher addSubscriber error: fn must be function!");
+                }
+                this.subscribers.push(fn);
+            },
+            removeSubscriber: function(name) {
+                this.subscribers.forEach(function(val, index, arr) {
+                    if (name === val.name) {
+                        arr[index] = null;
+                    }
+                })
+            },
+            publish: function(type) {
+                this.subscribers.forEach(function(val, index, arr) {
+                    arr[index](type);
+                })
+            },
+        };
+        return {
+            __keyMap: KeyMap.keyMap,
+            getKeyMap: function() {
+                return this.__keyMap
+            },
+            setKeyMap: function(key, value) {
+                this.__keyMap.setKeyMap(key, value);
+            },
+            getValueByKey: function(key) {
+                return this.__keyMap.getValueByKey(key);
+            },
+            getKeyByValue: function(value) {
+                return this.__keyMap.getKeyByValue(value);
+            },
+
+            __publisher: Publisher,
+            addSubscriber: function(fn) {
+                this.__publisher.addSubscriber(fn);
+            },
+            removeSubscriber: function(name) {
+                this.__publisher.removeSubscriber(name);
+            },
+            publish: function(type) {
+                this.__publisher.publish(type)
+            }
+        }
+    }
+
+    window.makePublisher = init;
+    window.PAGE = init();
+
+    function onKeyDown(evt) {
+        window.PUBLISHER.publish(KEYMAP.getKeyByValue(evt.keyCode));
+    }
+
+    window.document.onkeydown = onKeyDown;
+})(window);
