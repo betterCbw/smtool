@@ -24,26 +24,24 @@
     function init() {
         // 键值映射及其操作函数
         var KeyMap = {
-            keyMap: {
-                left: 37,
-                up: 38,
-                right: 39,
-                down: 40,
-                enter: 13,
-                back: 96,
-            },
+            left: 37,
+            up: 38,
+            right: 39,
+            down: 40,
+            enter: 13,
+            back: 96,
 
             setKeyMap: function(key, value) {
-                this.keyMap[key] = value;
+                this[key] = value;
             },
             getValueByKey: function(key) {
                 var temp = {};
-                temp[key] = this.keyMap[key];
+                temp[key] = this[key];
                 return temp;
             },
             getKeyByValue: function(value) {
-                for (var i in this.keyMap) {
-                    if (this.keyMap[i] === value) {
+                for (var i in this) {
+                    if (this[i] === value) {
                         return i;
                     }
                 }
@@ -75,7 +73,7 @@
 
         // 返回值
         return {
-            __keyMap: KeyMap.keyMap,
+            __keyMap: KeyMap,
             getKeyMap: function() {
                 return this.__keyMap
             },
