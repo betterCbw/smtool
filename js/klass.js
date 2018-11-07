@@ -1,9 +1,15 @@
 (function(window) {
 
     // 版本号
-    var VERSION = '0.0.2';
+    var VERSION = '0.0.3';
     // 更新
     /* 
+    Publisher：
+        1.改变订阅存储格式
+        2.addSubscriber()增加参数type、typeName，需传入类与类名
+        3.removeSubscriber()增加参数typeName，需传入类名
+    
+    *************************** v.0.0.2 ***************************
     KeyMap： 
         1.由String: Int改为String: Array
         2.增加基础函数不可修改 
@@ -21,8 +27,9 @@
     PAGE.getKeyByValue(value) // 通过value获取key，返回key
 
     // 发布部分：
-    PAGE.addSubscriber(fn) // 向发布器中添加一个订阅函数，typeof fn === 'function'
-    PAGE.removeSubscriber(name) // 通过函数名取消订阅
+    PAGE.addSubscriber(typeName, type, fn) // 向发布器中添加一个订阅者及订阅函数，typeof fn === 'function'
+    PAGE.removeSubscriber(typeName, name) // 通过函数名取消订阅
+    PAGE.modifySubscriber(typeName, type) // 修改订阅者，用于更新订阅者
 
     // 按键事件：
     bindOnKeyDown(keyCode) // keyCode:键值
@@ -30,6 +37,16 @@
     // 附加：
     PAGE.publish(type) // 发布消息，无需调用
     makePublisher() // 创建一个新的发布器
+    */
+
+    // 示例
+    /* 
+    user = {
+        name: 'chen',
+        getName: function(e) { console.log(this); return this.name; }
+    };
+    PAGE.addSubscriber('user', user, user.getName);
+    PAGE.removeSubscriber('user', 'getName')
     */
 
     function init() {
@@ -88,23 +105,46 @@
 
         // 发布器
         var Publisher = {
-            subscribers: [],
-            addSubscriber: function(fn) {
-                if (typeof fn !== "function") {
+            subscribers: {
+                any: []
+            },
+            addSubscriber: function(typeName, type, fn) {
+                typeName = typeName || 'any';
+                if (typeof fn !== 'function') {
                     throw new Error("Publisher addSubscriber error: fn must be function!");
                 }
-                this.subscribers.push(fn);
+                if (!typeName in this.subscribers) {
+                    if (this.subscribers[typeName].indexOf(null) != -1) {
+                        this.subscribers[typeName][this.subscribers[typeName].indexOf(null)] = fn;
+                    } else {
+                        this.subscribers[typeName].push(fn);
+                    }
+                } else {
+                    this.subscribers[typeName] = [type, fn];
+                }
             },
-            removeSubscriber: function(name) {
-                for (var i = 0; i < this.subscribers.length; i++) {
-                    if (this.subscribers[i].name === name) {
-                        this.subscribers[i] = null;
+            removeSubscriber: function(typeName, name) {
+                typeName = typeName || 'any';
+                if (!typeName in this.subscribers) {
+                    throw new Error("Publisher has no subscriber named '" + typeName + "'.");
+                }
+                for (var i = 1; i < this.subscribers[typeName].length; i++) {
+                    if (this.subscribers[typeName][i] != null && this.subscribers[typeName][i].name === name) {
+                        this.subscribers[typeName][i] = null;
                     }
                 }
             },
+            // modifySubscriber: function(typeName, type) {
+            //     if (!typeName in this.subscribers) {
+            //         throw new Error("Publisher has no subscriber named '" + typeName + "'.");
+            //     }
+            //     this.subscribers[typeName][0] = type;
+            // },
             publish: function(type) {
-                for (var i = 0; i < this.subscribers.length; i++) {
-                    this.subscribers[i](type);
+                for (var key in this.subscribers) {
+                    for (var i = 1; i < this.subscribers[key].length; i++) {
+                        this.subscribers[key][i].apply(this.subscribers[key][0], [type]);
+                    }
                 }
             },
         };
@@ -126,11 +166,11 @@
             },
 
             __publisher: Publisher,
-            addSubscriber: function(fn) {
-                this.__publisher.addSubscriber(fn);
+            addSubscriber: function(typeName, type, fn) {
+                this.__publisher.addSubscriber(typeName, type, fn);
             },
-            removeSubscriber: function(name) {
-                this.__publisher.removeSubscriber(name);
+            removeSubscriber: function(typeName, name) {
+                this.__publisher.removeSubscriber(typeName, name);
             },
             publish: function(type) {
                 this.__publisher.publish(type)
@@ -147,7 +187,6 @@
             fromIndex = fromIndex || 0
             for (var i = fromIndex; i < this.length; i++) {
                 if (this[i] === searchElement) {
-                    console.log('its ok!')
                     return i
                 }
             }
