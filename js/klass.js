@@ -10,7 +10,7 @@
         3.removeSubscriber()增加参数typeName，需传入类名
     
     *************************** v.0.0.2 ***************************
-    KeyMap： 
+    KeyMap：
         1.由String: Int改为String: Array
         2.增加基础函数不可修改 
 
@@ -37,16 +37,6 @@
     // 附加：
     PAGE.publish(type) // 发布消息，无需调用
     makePublisher() // 创建一个新的发布器
-    */
-
-    // 示例
-    /* 
-    user = {
-        name: 'chen',
-        getName: function(e) { console.log(this); return this.name; }
-    };
-    PAGE.addSubscriber('user', user, user.getName);
-    PAGE.removeSubscriber('user', 'getName')
     */
 
     function init() {
@@ -113,8 +103,8 @@
                 if (typeof fn !== 'function') {
                     throw new Error("Publisher addSubscriber error: fn must be function!");
                 }
-                if (!typeName in this.subscribers) {
-                    if (this.subscribers[typeName].indexOf(null) != -1) {
+                if (typeName in this.subscribers) {
+                    if (this.subscribers[typeName].indexOf(null) !== -1) {
                         this.subscribers[typeName][this.subscribers[typeName].indexOf(null)] = fn;
                     } else {
                         this.subscribers[typeName].push(fn);
@@ -125,21 +115,15 @@
             },
             removeSubscriber: function(typeName, name) {
                 typeName = typeName || 'any';
-                if (!typeName in this.subscribers) {
+                if (!(typeName in this.subscribers)) {
                     throw new Error("Publisher has no subscriber named '" + typeName + "'.");
                 }
                 for (var i = 1; i < this.subscribers[typeName].length; i++) {
-                    if (this.subscribers[typeName][i] != null && this.subscribers[typeName][i].name === name) {
+                    if (this.subscribers[typeName][i] !== null && this.subscribers[typeName][i].name === name) {
                         this.subscribers[typeName][i] = null;
                     }
                 }
             },
-            // modifySubscriber: function(typeName, type) {
-            //     if (!typeName in this.subscribers) {
-            //         throw new Error("Publisher has no subscriber named '" + typeName + "'.");
-            //     }
-            //     this.subscribers[typeName][0] = type;
-            // },
             publish: function(type) {
                 for (var key in this.subscribers) {
                     for (var i = 1; i < this.subscribers[key].length; i++) {
@@ -197,3 +181,13 @@
     window.makePublisher = init;
     window.PAGE = init();
 })(window);
+
+// 示例
+/* 
+user = {
+    name: 'chen',
+    getName: function(e) { console.log(this); return this.name; }
+};
+PAGE.addSubscriber('user', user, user.getName);
+PAGE.removeSubscriber('user', 'getName')
+ */
