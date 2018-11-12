@@ -42,7 +42,25 @@
             [{}, {}, { id: 'list' }],
         ];
 
-        
+        function moveCallback(oldId, newId, select) {
+            var old = document.getElementById(oldId);
+            var id = document.getElementById(newId);
+            var width = 64,
+                height = 32;
+            old.style.width = width + 'px';
+            old.style.height = height + 'px';
+            old.style.backgroundImage = '';
+
+            id.style.width = width * 2 + 'px';
+            id.style.height = height * 2 + 'px';
+            id.style.backgroundImage = "url(" + select + ")";
+        }
+
+        var user = new createUser(elements, './static/select.gif', function init(focus, select) {
+            moveCallback(focus, focus, select);
+        }, 'back');
+        user.moveCallback = moveCallback;
+
     </script>
 </body>
 
